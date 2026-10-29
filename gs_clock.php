@@ -2,7 +2,7 @@
 /*
 Plugin Name: Analog Clock Widget
 Description: Fixed-position analog clock widget for GetSimple CE with customizable settings.
-Version: 1.0
+Version: 1.1
 Author: Zeth
 */
 
@@ -10,7 +10,7 @@ Author: Zeth
 register_plugin(
     'gs_clock',
     'Analog Clock',
-    '1.0',
+    '1.1',
     'Zeth',
     'https://getsimple-ce.ovh/',
     'Analog Clock Widget for GetSimple CE',
@@ -44,7 +44,8 @@ function gs_clock_settings_page() {
     );
 
     if (isset($_POST['submit_gs_clock'])) {
-        $settings = array();$settings['opacity'] = isset($_POST['opacity']) && trim($_POST['opacity']) !== '' ? trim($_POST['opacity']) :$default_settings['opacity'];
+        $settings = array();
+        $settings['opacity'] = isset($_POST['opacity']) && trim($_POST['opacity']) !== '' ? trim($_POST['opacity']) : $default_settings['opacity'];
         $settings['pos_top'] = isset($_POST['pos_top']) ? 'true' : 'false';
         $settings['pos_bottom'] = isset($_POST['pos_bottom']) ? 'true' : 'false';
         $settings['pos_left'] = isset($_POST['pos_left']) ? 'true' : 'false';
@@ -54,10 +55,11 @@ function gs_clock_settings_page() {
         // Check text fields and default if empty
         $fields = array('clock_size', 'numbers_size', 'hour_hand', 'minute_hand', 'second_hand', 'bg_color', 'num_color', 'hour_color', 'min_color', 'sec_color');
         
-        foreach ($fields as$field) {
-            $is_set = isset($_POST[$field]);$is_not_empty = false;
+        foreach ($fields as $field) {
+            $is_set = isset($_POST[$field]); $is_not_empty = false;
             if ($is_set) {
-                if (trim($_POST[$field]) !== '') {$is_not_empty = true;
+                if (trim($_POST[$field]) !== '') {
+                    $is_not_empty = true;
                 }
             }
 
@@ -82,77 +84,115 @@ function gs_clock_settings_page() {
     $saved_settings = array();
     if (file_exists(GSDATAOTHERPATH . 'gs_clock.json')) {
         $saved_settings = json_decode(file_get_contents(GSDATAOTHERPATH . 'gs_clock.json'), true);
-        if (!is_array($saved_settings)) {$saved_settings = array();
+        if (!is_array($saved_settings)) {
+            $saved_settings = array();
         }
     }
 
     // Merge saved settings with default fallbacks
-    $settings = array_merge($default_settings,$saved_settings);
+    $settings = array_merge($default_settings, $saved_settings);
 
     // Final fallback check for empty values
-    foreach ($default_settings as $k =>$v) {
+    foreach ($default_settings as $k => $v) {
         $not_set = !isset($settings[$k]);
         if ($not_set) {
-            $settings[$k] =$v;
+            $settings[$k] = $v;
         } else {
             $is_empty = (trim($settings[$k]) === '');
-            if ($is_empty) {$settings[$k] =$v;
+            if ($is_empty) {
+                $settings[$k] = $v;
             }
         }
     }
     ?>
-    
-    <h3><strong>Analog Clock Widget</strong></h3>
-   
-    <p>Fixed-position analog clock widget for GetSimple CE</p>
-    <p style="border-left: 3px solid #ff0000; padding-left: 10px; margin: 10px 0;">
-        To display the widget, add the following template tag to your template's body section:<br>
-        <strong>Template Tag: <code>&lt;?php get_gs_clock(); ?&gt;</code></strong>
-    </p>
+    <style>
+        .gs-clock-admin-wrap {
+            font-size: 14px;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        .gs-clock-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        .gs-clock-admin-wrap input[type="text"] {
+            width: 100% !important;
+            box-sizing: border-box;
+            font-size: 14px !important;
+            padding: 6px 8px !important;
+        }
+        .gs-checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+            background: #f9f9f9;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+        }
+        @media screen and (max-width: 768px) {
+            .gs-clock-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .gs-checkbox-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
 
-    <form action="" method="post">
-        <h3>Clock Widget Settings</h3>
-        
-        <p style="margin-bottom:5px;"><strong>Opacity:</strong></p>
-        <div style="margin-bottom: 20px;">
-            <input type="text" name="opacity" value="<?php echo htmlspecialchars($settings['opacity']); ?>" style="width:100px;"> (e.g., 0.5 50% transparent)
-        </div>
-
-        <p style="margin-bottom:10px;"><strong>Clock Position:</strong></p>
-        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 30px;">
-            <label style="display: inline-flex; align-items: center; gap: 5px;"><input type="checkbox" name="pos_top" <?php if($settings['pos_top']=='true') echo 'checked'; ?>> Top</label>
-            <label style="display: inline-flex; align-items: center; gap: 5px;"><input type="checkbox" name="pos_bottom" <?php if($settings['pos_bottom']=='true') echo 'checked'; ?>> Bottom</label>
-            <label style="display: inline-flex; align-items: center; gap: 5px;"><input type="checkbox" name="pos_left" <?php if($settings['pos_left']=='true') echo 'checked'; ?>> Left</label>
-            <label style="display: inline-flex; align-items: center; gap: 5px;"><input type="checkbox" name="pos_right" <?php if($settings['pos_right']=='true') echo 'checked'; ?>> Right</label>
-            <label style="display: inline-flex; align-items: center; gap: 5px;"><input type="checkbox" name="pos_middle" <?php if($settings['pos_middle']=='true') echo 'checked'; ?>> Center</label>
-        </div>
-
-        <p style="margin-bottom:0;"><strong>Size Settings (px):</strong></p>
-        <table style="width: 100%; max-width: 800px; margin-bottom: 10px;">
-            <tr>
-                <td>Clock<br><input type="text" name="clock_size" value="<?php echo htmlspecialchars($settings['clock_size']); ?>" style="width:100px;"></td>
-                <td>Numbers<br><input type="text" name="numbers_size" value="<?php echo htmlspecialchars($settings['numbers_size']); ?>" style="width:100px;"></td>
-                <td>Hour<br><input type="text" name="hour_hand" value="<?php echo htmlspecialchars($settings['hour_hand']); ?>" style="width:100px;"></td>
-                <td>Minute<br><input type="text" name="minute_hand" value="<?php echo htmlspecialchars($settings['minute_hand']); ?>" style="width:100px;"></td>
-                <td>Second<br><input type="text" name="second_hand" value="<?php echo htmlspecialchars($settings['second_hand']); ?>" style="width:100px;"></td>
-            </tr>
-        </table>
-
-        <p style="margin-bottom:0;"><strong>Color Settings:</strong></p>
-        <table style="width: 100%; max-width: 800px; margin-bottom: 10px;">
-            <tr>
-                <td>Background<br><input type="text" name="bg_color" value="<?php echo htmlspecialchars($settings['bg_color']); ?>" style="width:100px;"></td>
-                <td>Numbers<br><input type="text" name="num_color" value="<?php echo htmlspecialchars($settings['num_color']); ?>" style="width:100px;"></td>
-                <td>Hour<br><input type="text" name="hour_color" value="<?php echo htmlspecialchars($settings['hour_color']); ?>" style="width:100px;"></td>
-                <td>Minute<br><input type="text" name="min_color" value="<?php echo htmlspecialchars($settings['min_color']); ?>" style="width:100px;"></td>
-                <td>Second<br><input type="text" name="sec_color" value="<?php echo htmlspecialchars($settings['sec_color']); ?>" style="width:100px;"></td>
-            </tr>
-        </table>
-
-        <p>
-            <input type="submit" name="submit_gs_clock" value="Save Settings" class="submit" style="background:#001144; color:#fff; padding:8px 15px; margin-top:20px; border:none; border-radius:4px; cursor:pointer;">
+    <div class="gs-clock-admin-wrap">
+        <h3><strong>Analog Clock Widget</strong></h3>
+       
+        <p>Fixed-position analog clock widget for GetSimple CE</p>
+        <p style="border-left: 3px solid #ff0000; padding-left: 10px; margin: 10px 0;">
+            To display the widget, add the following template tag to your template's body section:<br>
+            <strong>Template Tag: <code>&lt;?php get_gs_clock(); ?&gt;</code></strong>
         </p>
-    </form>
+
+        <form action="" method="post">
+            <h3>Clock Widget Settings</h3>
+            
+            <p style="margin-bottom:5px;"><strong>Opacity:</strong></p>
+            <div style="margin-bottom: 20px; max-width: 200px;">
+                <input type="text" name="opacity" value="<?php echo htmlspecialchars($settings['opacity']); ?>"> <small>(e.g., 0.5 50% transparent)</small>
+            </div>
+
+            <p style="margin-bottom:10px;"><strong>Clock Position:</strong></p>
+            <div class="gs-checkbox-group">
+                <label style="display: inline-flex; align-items: center; gap: 5px;"><input type="checkbox" name="pos_top" <?php if($settings['pos_top']=='true') echo 'checked'; ?>> Top</label>
+                <label style="display: inline-flex; align-items: center; gap: 5px;"><input type="checkbox" name="pos_bottom" <?php if($settings['pos_bottom']=='true') echo 'checked'; ?>> Bottom</label>
+                <label style="display: inline-flex; align-items: center; gap: 5px;"><input type="checkbox" name="pos_left" <?php if($settings['pos_left']=='true') echo 'checked'; ?>> Left</label>
+                <label style="display: inline-flex; align-items: center; gap: 5px;"><input type="checkbox" name="pos_right" <?php if($settings['pos_right']=='true') echo 'checked'; ?>> Right</label>
+                <label style="display: inline-flex; align-items: center; gap: 5px;"><input type="checkbox" name="pos_middle" <?php if($settings['pos_middle']=='true') echo 'checked'; ?>> Center</label>
+            </div>
+
+            <p style="margin-bottom:0;"><strong>Size Settings (px):</strong></p>
+            <div class="gs-clock-grid">
+                <div>Clock<br><input type="text" name="clock_size" value="<?php echo htmlspecialchars($settings['clock_size']); ?>"></div>
+                <div>Numbers<br><input type="text" name="numbers_size" value="<?php echo htmlspecialchars($settings['numbers_size']); ?>"></div>
+                <div>Hour Hand<br><input type="text" name="hour_hand" value="<?php echo htmlspecialchars($settings['hour_hand']); ?>"></div>
+                <div>Minute Hand<br><input type="text" name="minute_hand" value="<?php echo htmlspecialchars($settings['minute_hand']); ?>"></div>
+                <div>Second Hand<br><input type="text" name="second_hand" value="<?php echo htmlspecialchars($settings['second_hand']); ?>"></div>
+            </div>
+
+            <p style="margin-bottom:0;"><strong>Color Settings:</strong></p>
+            <div class="gs-clock-grid">
+                <div>Background<br><input type="text" name="bg_color" value="<?php echo htmlspecialchars($settings['bg_color']); ?>"></div>
+                <div>Numbers<br><input type="text" name="num_color" value="<?php echo htmlspecialchars($settings['num_color']); ?>"></div>
+                <div>Hour Hand<br><input type="text" name="hour_color" value="<?php echo htmlspecialchars($settings['hour_color']); ?>"></div>
+                <div>Minute Hand<br><input type="text" name="min_color" value="<?php echo htmlspecialchars($settings['min_color']); ?>"></div>
+                <div>Second Hand<br><input type="text" name="sec_color" value="<?php echo htmlspecialchars($settings['sec_color']); ?>"></div>
+            </div>
+
+            <p>
+                <input type="submit" name="submit_gs_clock" value="Save Settings" class="submit" style="background:#001144; color:#fff; padding:8px 15px; margin-top:20px; border:none; border-radius:4px; cursor:pointer;">
+            </p>
+        </form>
+    </div>
     <?php
 }
 
@@ -180,18 +220,20 @@ function get_gs_clock() {
     $saved_settings = array();
     if (file_exists(GSDATAOTHERPATH . 'gs_clock.json')) {
         $saved_settings = json_decode(file_get_contents(GSDATAOTHERPATH . 'gs_clock.json'), true);
-        if (!is_array($saved_settings)) {$saved_settings = array();
+        if (!is_array($saved_settings)) {
+            $saved_settings = array();
         }
     }
-    $settings = array_merge($default_settings,$saved_settings);
+    $settings = array_merge($default_settings, $saved_settings);
 
-    foreach ($default_settings as $k =>$v) {
+    foreach ($default_settings as $k => $v) {
         $not_set = !isset($settings[$k]);
         if ($not_set) {
-            $settings[$k] =$v;
+            $settings[$k] = $v;
         } else {
             $is_empty = (trim($settings[$k]) === '');
-            if ($is_empty) {$settings[$k] =$v;
+            if ($is_empty) {
+                $settings[$k] = $v;
             }
         }
     }
@@ -204,14 +246,17 @@ function get_gs_clock() {
     $is_right = ($settings['pos_right'] === 'true');
     $is_center = ($settings['pos_middle'] === 'true');
 
-    if ($is_top && $is_center) {$pos_css = "top: 20px; left: 50%; transform: translateX(-50%); bottom: auto; right: auto;";
-    } elseif ($is_bottom && $is_center) {$pos_css = "bottom: 20px; left: 50%; transform: translateX(-50%); top: auto; right: auto;";
-    } elseif ($is_center) {$pos_css = "top: 50%; left: 50%; transform: translate(-50%, -50%); bottom: auto; right: auto;";
+    if ($is_top && $is_center) {
+        $pos_css = "top: 20px; left: 50%; transform: translateX(-50%); bottom: auto; right: auto;";
+    } elseif ($is_bottom && $is_center) {
+        $pos_css = "bottom: 20px; left: 50%; transform: translateX(-50%); top: auto; right: auto;";
+    } elseif ($is_center) {
+        $pos_css = "top: 50%; left: 50%; transform: translate(-50%, -50%); bottom: auto; right: auto;";
     } else {
-        if ($is_top) {$pos_css .= "top: 20px; "; }
-        if ($is_bottom) {$pos_css .= "bottom: 20px; "; }
-        if ($is_left) {$pos_css .= "left: 20px; right: auto;"; } 
-        elseif ($is_right) {$pos_css .= "right: 20px; left: auto;"; }
+        if ($is_top) { $pos_css .= "top: 20px; "; }
+        if ($is_bottom) { $pos_css .= "bottom: 20px; "; }
+        if ($is_left) { $pos_css .= "left: 20px; right: auto;"; } 
+        elseif ($is_right) { $pos_css .= "right: 20px; left: auto;"; }
     }
 
     $c_size = intval($settings['clock_size']);
